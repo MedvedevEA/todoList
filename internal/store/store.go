@@ -2,9 +2,8 @@ package store
 
 import (
 	"context"
-	"database/sql"
 	"embed"
-	"errors"
+	"time"
 	"todolist/internal/model"
 	"todolist/internal/repository/dto"
 	"todolist/internal/servererrors"
@@ -41,19 +40,22 @@ func New(databaseConnectString string, embedMigrations embed.FS) (*Store, error)
 	}, nil
 }
 func (s *Store) Close() error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 	return s.conn.Close(ctx)
 }
 
 func (s *Store) AddTask(req *dto.AddTask) (*model.Task, error) {
-	ctx := context.TODO()
-	query := `INSERT INTO tasks VALUE(default,$1,$2,$3,default,default) RETURNING *`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	query := `INSERT INTO tasks VALUES(default,$1,$2,$3,default,default) RETURNING *`
 	task := new(model.Task)
-	err := s.conn.QueryRow(ctx, query, req.Title, req.Description, req.Status).Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.Updated_at, &task.Updated_at)
+	err := s.conn.QueryRow(ctx, query, req.Title, req.Description, req.Status).Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.CreatedAt, &task.UpdatedAt)
 	return task, err
 }
 func (s *Store) GetTasks(req *dto.GetTasks) ([]*model.Task, error) {
-	ctx := context.TODO()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 	query := `SELECT * FROM tasks`
 
 	rows, err := s.conn.Query(ctx, query)
@@ -65,7 +67,7 @@ func (s *Store) GetTasks(req *dto.GetTasks) ([]*model.Task, error) {
 	tasks := []*model.Task{}
 	for rows.Next() {
 		task := new(model.Task)
-		err := rows.Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.Created_at, &task.Updated_at)
+		err := rows.Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.CreatedAt, &task.UpdatedAt)
 		if err != nil {
 			return nil, servererrors.ErrorInternal
 		}
@@ -74,29 +76,18 @@ func (s *Store) GetTasks(req *dto.GetTasks) ([]*model.Task, error) {
 	return tasks, nil
 }
 func (s *Store) UpdateTask(req *dto.UpdateTask) (*model.Task, error) {
-	ctx := context.TODO()
-	query := `UPDATE tasks SET title=$2, description=$3, status=$4 WHERE id=$1 RETURNING *`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	query := `UPDATE tasks SET title=$2, description=$3, status=$4, updated_at=now() WHERE id=$1 RETURNING *`
 	task := new(model.Task)
-	err := s.conn.QueryRow(ctx, query, req.Id, req.Title, req.Description, req.Status).Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.Updated_at, &task.Updated_at)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, servererrors.ErrorRecordNotFound
-	}
-	if err != nil {
-		return nil, servererrors.ErrorInternal
-	}
+	err := s.conn.QueryRow(ctx, query, req.Id, req.Title, req.Description, req.Status).Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.CreatedAt, &task.UpdatedAt)
 	return task, err
 }
 func (s *Store) RemoveTask(req *dto.RemoveTask) error {
-	ctx := context.TODO()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 	query := `DELETE FROM tasks	WHERE id=$1 RETURNING id`
-	row := s.conn.QueryRow(ctx, query, req.Id)
-	var taskId int
-	err := row.Scan(&taskId)
-	if errors.Is(err, sql.ErrNoRows) {
-		return servererrors.ErrorRecordNotFound
-	}
-	if err != nil {
-		return servererrors.ErrorInternal
-	}
-	return nil
+	taskId := new(int)
+	return s.conn.QueryRow(ctx, query, req.Id).Scan(taskId)
+
 }

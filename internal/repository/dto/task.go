@@ -1,18 +1,18 @@
 package dto
 
 type AddTask struct {
-	Title       string  `db:"title"`
-	Description *string `db:"description"`
-	Status      string  `db:"status"`
+	Title       string
+	Description *string
+	Status      string
 }
 type GetTasks struct {
 }
 type UpdateTask struct {
-	Id          int     `json:"id" db:"id"`
-	Title       string  `json:"title" db:"title"`
-	Description *string `json:"description" db:"description"`
-	Status      string  `json:"status" db:"status"`
+	Id          int
+	Title       string
+	Description *string
+	Status      string
 }
 type RemoveTask struct {
-	Id int `db:"id"`
+	Id int
 }
