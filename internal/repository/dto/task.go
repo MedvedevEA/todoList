@@ -1,22 +1,18 @@
 package dto
 
-import "time"
-
 type AddTask struct {
-	Title       string
-	Description *string
-	Status      string
+	Title       string  `db:"title"`
+	Description *string `db:"description"`
+	Status      string  `db:"status"`
 }
 type GetTasks struct {
 }
 type UpdateTask struct {
-	TaskId      int
-	Title       string
-	Description *string
-	Status      string
-	Created_at  *time.Time
-	Updated_at  *time.Time
+	Id          int     `json:"id" db:"id"`
+	Title       string  `json:"title" db:"title"`
+	Description *string `json:"description" db:"description"`
+	Status      string  `json:"status" db:"status"`
 }
 type RemoveTask struct {
-	TaskId int
+	Id int `db:"id"`
 }

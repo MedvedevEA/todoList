@@ -8,6 +8,7 @@ import (
 	"todolist/internal/service"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 type ApiServer struct {
@@ -17,6 +18,7 @@ type ApiServer struct {
 
 func New(bindAddress string, service *service.Service) *ApiServer {
 	app := fiber.New()
+	app.Use(recover.New())
 	controller.Init(app, service)
 
 	return &ApiServer{
