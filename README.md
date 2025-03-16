@@ -7,7 +7,8 @@ SkillsRock's test task
 4. Запустите проект.
 ## Запуск проекта Docker
 1. Клонируйте репозиторий.
-2. Выполните команду: 
+2. При необходимости, измените значения переменных среды(environment) для сервиса todo-list-api-server в файле docker-compose.yaml
+3. Выполните команду: 
 ```
 docker compose up -d
 ```
