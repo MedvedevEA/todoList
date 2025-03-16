@@ -1,0 +1,34 @@
+services:
+  #todo-list-db
+  todo-list-db:
+    container_name: todo-list-db
+    environment:
+      - POSTGRES_USER=postgres 
+      - POSTGRES_PASSWORD=postgres
+    hostname: todo-list-db
+    image: postgres:latest
+    networks:
+      - todo-list-network
+    #ports:
+    #  - 5432:5432
+    volumes:
+      - todo-list-db-volume:/var/lib/postgresql/data
+  #todo-list-api-server
+  todo-list-api-server:
+    container_name: todo-list-api-server
+    depends_on: 
+      - todo-list-db
+    environment:
+      - TODOLIST_SERVER_BIND_ADDRESS=:8000
+      - TODOLIST_DATABASE_CONNECT_STRING=host=todo-list-db database=postgres port=5432 sslmode=disable user=postgres password=postgres
+    hostname: todo-list-api-server
+    build: .    
+    networks:
+      - todo-list-network
+    ports:
+      - 8000:8000
+volumes:
+  todo-list-db-volume:
+networks:
+  todo-list-network:
+    driver: bridge

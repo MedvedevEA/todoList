@@ -6,7 +6,6 @@ import (
 	"time"
 	"todolist/internal/model"
 	"todolist/internal/repository/dto"
-	"todolist/internal/servererrors"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -60,7 +59,7 @@ func (s *Store) GetTasks(req *dto.GetTasks) ([]*model.Task, error) {
 
 	rows, err := s.conn.Query(ctx, query)
 	if err != nil {
-		return nil, servererrors.ErrorInternal
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -69,7 +68,7 @@ func (s *Store) GetTasks(req *dto.GetTasks) ([]*model.Task, error) {
 		task := new(model.Task)
 		err := rows.Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.CreatedAt, &task.UpdatedAt)
 		if err != nil {
-			return nil, servererrors.ErrorInternal
+			return nil, err
 		}
 		tasks = append(tasks, task)
 	}

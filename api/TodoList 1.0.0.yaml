@@ -1,0 +1,165 @@
+openapi: 3.0.0
+info:
+  title: home-iot-api
+  description: The API for the EatBacon IOT project
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/imedvedevea/TodoList/1.0.0
+  description: SwaggerHub API Auto Mocking
+paths:
+  /tasks:
+    get:
+      summary: Get tasks
+      description: Get all tasks without pagination
+      operationId: getTasks
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/task'
+        "500":
+          description: Internal Server Error
+    post:
+      summary: Add task
+      description: Add a new task to the todo list.
+      operationId: addTask
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tasks_body'
+        required: true
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/task'
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+  /tasks/{id}:
+    put:
+      summary: Update task
+      description: Update a task by ID.
+      operationId: updateTask
+      parameters:
+      - name: id
+        in: path
+        description: Task ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tasks_id_body'
+        required: true
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/task'
+        "400":
+          description: Bad Request
+        "404":
+          description: Page Not Found
+        "500":
+          description: Internal Server Error
+    delete:
+      summary: Delete task
+      description: Delete a task by ID.
+      operationId: deleteTask
+      parameters:
+      - name: id
+        in: path
+        description: Task ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          example: 1
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "404":
+          description: Page Not Found
+        "500":
+          description: Internal Server Error
+components:
+  schemas:
+    task:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Task
+        description:
+          type: string
+          example: Description
+        status:
+          type: string
+          example: new
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      description: Todo task
+    tasks_body:
+      required:
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+          example: Task
+        description:
+          type: string
+          example: Description
+        status:
+          type: string
+          example: new
+          default: new
+          enum:
+          - new
+          - in_progress
+          - done
+    tasks_id_body:
+      required:
+      - status
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+          example: Task
+        description:
+          type: string
+          example: Description
+        status:
+          type: string
+          example: new
+          enum:
+          - new
+          - in_progress
+          - done
