@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"embed"
+	"log"
 	"time"
 	"todolist/internal/model"
 	"todolist/internal/repository/dto"
@@ -18,11 +19,31 @@ type Store struct {
 
 func New(databaseConnectString string, embedMigrations embed.FS) (*Store, error) {
 	//connect
-	ctx := context.TODO()
-	conn, err := pgx.Connect(ctx, databaseConnectString)
-	if err != nil {
-		return nil, err
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var (
+		conn  *pgx.Conn
+		err   error
+		count int
+	)
+	for {
+		count++
+		conn, err = pgx.Connect(ctx, databaseConnectString)
+		if err != nil {
+			log.Printf("Database connect error(%d): %s", count, err.Error())
+
+			if count > 4 {
+				return nil, err
+			}
+
+			time.Sleep(1 * time.Second)
+			continue
+		}
+		break
 	}
+	log.Println("Successful connection to the database")
+
 	//migration
 	goose.SetBaseFS(embedMigrations)
 	config := conn.Config()
